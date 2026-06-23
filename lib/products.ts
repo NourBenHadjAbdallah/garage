@@ -118,8 +118,71 @@ export const products: Product[] = [
   },
 ]
 
+/* ------------------------------------------------------------------ */
+/* Custom posters store (client-side / localStorage, frontend only)    */
+/* ------------------------------------------------------------------ */
+
+export const CUSTOM_STORAGE_KEY = 'apex-custom-posters-v1'
+
+let customCache: Product[] = []
+let customLoaded = false
+
+function ensureCustomLoaded() {
+  if (customLoaded || typeof window === 'undefined') return
+  try {
+    const raw = localStorage.getItem(CUSTOM_STORAGE_KEY)
+    customCache = raw ? (JSON.parse(raw) as Product[]) : []
+  } catch {
+    customCache = []
+  }
+  customLoaded = true
+}
+
+export function getCustomProducts(): Product[] {
+  ensureCustomLoaded()
+  return customCache
+}
+
+function persistCustom() {
+  if (typeof window === 'undefined') return
+  localStorage.setItem(CUSTOM_STORAGE_KEY, JSON.stringify(customCache))
+}
+
+export function addCustomProduct(product: Product): Product[] {
+  ensureCustomLoaded()
+  customCache = [product, ...customCache]
+  persistCustom()
+  return customCache
+}
+
+export function removeCustomProduct(id: string): Product[] {
+  ensureCustomLoaded()
+  customCache = customCache.filter((p) => p.id !== id)
+  persistCustom()
+  return customCache
+}
+
+export function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+}
+
+/** Seed posters merged with any client-side custom posters. */
+export function getAllProducts(): Product[] {
+  ensureCustomLoaded()
+  return [...products, ...customCache]
+}
+
+export function getProductsByCategory(category: Category): Product[] {
+  return getAllProducts().filter((p) => p.category === category)
+}
+
 export function getProduct(id: string) {
-  return products.find((p) => p.id === id)
+  ensureCustomLoaded()
+  return products.find((p) => p.id === id) ?? customCache.find((p) => p.id === id)
 }
 
 export function discountPercent(product: Product) {
