@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   Phone,
   MapPin,
@@ -10,6 +11,7 @@ import {
   CircleDot,
   CheckCheck,
   Truck,
+  LogOut,
 } from 'lucide-react'
 import { SiteHeader } from '@/components/site-header'
 import { SiteFooter } from '@/components/site-footer'
@@ -46,6 +48,7 @@ const STATUS_META: Record<
 }
 
 export default function AdminPage() {
+  const router = useRouter()
   const [orders, setOrders] = useState<Order[] | null>(null)
 
   useEffect(() => {
@@ -54,6 +57,12 @@ export default function AdminPage() {
 
   function setStatus(id: string, status: Order['status']) {
     setOrders(updateOrderStatus(id, status))
+  }
+
+  async function handleLogout() {
+    await fetch('/api/admin/logout', { method: 'POST' })
+    router.push('/admin/login')
+    router.refresh()
   }
 
   const pendingCount = orders?.filter((o) => o.status === 'pending').length ?? 0
@@ -74,7 +83,7 @@ export default function AdminPage() {
               Vérifiez les paiements et gérez les expéditions.
             </p>
           </div>
-          <div className="flex gap-6">
+          <div className="flex flex-wrap items-end gap-6">
             <div>
               <p className="font-heading text-2xl font-bold">{orders?.length ?? 0}</p>
               <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -95,6 +104,15 @@ export default function AdminPage() {
                 Total
               </p>
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="font-heading text-xs uppercase tracking-widest"
+            >
+              <LogOut className="mr-1 h-3.5 w-3.5" />
+              Déconnexion
+            </Button>
           </div>
         </div>
 
@@ -107,7 +125,7 @@ export default function AdminPage() {
             <p className="mt-1 text-sm text-muted-foreground">
               Les nouvelles commandes apparaîtront ici en temps réel.
             </p>
-            <Button asChild className="mt-6 font-heading uppercase tracking-widest">
+            <Button className="mt-6 font-heading uppercase tracking-widest">
               <Link href="/checkout">Passer une commande test</Link>
             </Button>
           </div>
