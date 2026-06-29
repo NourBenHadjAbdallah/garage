@@ -1,51 +1,61 @@
 import Link from 'next/link'
 import { CATEGORY_LABELS } from '@/lib/products'
+import logo from '../public/logo.png'
+
+const PAYMENT_METHODS = ['D17 / Sobflous', 'Flouci', 'Virement bancaire', 'Paiement à la livraison']
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border bg-background">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-4 lg:px-8">
-        <div className="md:col-span-2">
-          <span className="font-heading text-2xl font-bold uppercase tracking-[0.2em]">
-            Apex
-          </span>
-          <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted-foreground">
-            Premium framed automotive posters. Museum-grade prints, delivered
-            anywhere in Tunisia via Aramex, Runex and Yalidine.
-          </p>
+    <footer className="border-t border-border/60 bg-[#F7F6F3]">
+      <div className="mx-auto max-w-7xl px-4 pt-16 pb-8 sm:px-6 lg:px-8">
+
+        {/* Top grid */}
+        <div className="grid gap-12 md:grid-cols-4">
+
+          {/* Brand */}
+          <div className="md:col-span-2">
+            <img src={logo.src} alt="Drive Frame" width={156} height={30} className="block" />
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-muted-foreground">
+              Premium framed automotive posters. Museum-grade prints delivered anywhere in Tunisia via Aramex, Runex and Yalidine.
+            </p>
+          </div>
+
+          {/* Shop */}
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-foreground">
+              Shop
+            </p>
+            <ul className="mt-4 space-y-2.5">
+              {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
+                <li key={key}>
+                  <Link
+                    href={`/category/${key}`}
+                    className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Payment */}
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-foreground">
+              Paiement
+            </p>
+            <ul className="mt-4 space-y-2.5">
+              {PAYMENT_METHODS.map((m) => (
+                <li key={m} className="text-sm text-muted-foreground">{m}</li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        <div>
-          <h3 className="font-heading text-sm font-semibold uppercase tracking-widest">
-            Shop
-          </h3>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
-              <li key={key}>
-                <Link href={`/category/${key}`} className="hover:text-foreground">
-                  {label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h3 className="font-heading text-sm font-semibold uppercase tracking-widest">
-            Paiement
-          </h3>
-          <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-            <li>D17 / Sobflous</li>
-            <li>Flouci</li>
-            <li>Virement bancaire</li>
-            <li>Paiement à la livraison</li>
-          </ul>
-        </div>
-      </div>
-      <div className="border-t border-border">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-2 px-4 py-6 text-xs text-muted-foreground sm:flex-row sm:px-6 lg:px-8">
-          <p>© {new Date().getFullYear()} APEX Posters. Tous droits réservés.</p>
-          <Link href="/admin" className="hover:text-foreground">
+        {/* Bottom bar */}
+        <div className="mt-14 flex flex-col items-center justify-between gap-3 border-t border-border/60 pt-6 text-xs text-muted-foreground sm:flex-row">
+          <p>© {new Date().getFullYear()} Drive Frame. Tous droits réservés.</p>
+          <Link href="/admin" className="transition-colors hover:text-foreground">
             Admin
           </Link>
         </div>

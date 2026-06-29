@@ -1,3 +1,4 @@
+// lib/products.ts
 export type Category = 'luxury' | 'sports' | 'jdm' | 'f1'
 
 export type Product = {
@@ -115,16 +116,6 @@ export const products: Product[] = [
     description:
       'Effortless opulence. A minimalist composition of the most prestigious silhouette in motoring, finished in deep black.',
     trending: true,
-  },
-  {
-    id: 'new-product',
-    name: 'New Product',
-    subtitle: 'Edit me',
-    category: 'sports',
-    price: 99,
-    image: '/placeholder.svg',
-    description:
-      'Placeholder product — replace this with your real name, subtitle, category, price and image.',
   },
 ]
 

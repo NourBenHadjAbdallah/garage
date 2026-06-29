@@ -5,19 +5,17 @@ import { CartProvider } from '@/components/cart/cart-provider'
 import { Toaster } from '@/components/ui/sonner'
 import './globals.css'
 
-const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] })
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-})
+const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'], preload: false })
+const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'], preload: false })
 const oswald = Oswald({
   variable: '--font-oswald',
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
+  preload: false,
 })
 
 export const metadata: Metadata = {
-  title: 'APEX — Premium Automotive Posters',
+  title: 'Drive Frame — Premium Automotive Posters',
   description:
     'Upgrade your walls with premium quality framed posters featuring luxury cars, sports cars, and automotive culture. Delivered across Tunisia.',
   generator: 'v0.app',
@@ -37,6 +35,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${oswald.variable} bg-background`}
+      suppressHydrationWarning
     >
       <body className="font-sans antialiased">
         <CartProvider>{children}</CartProvider>

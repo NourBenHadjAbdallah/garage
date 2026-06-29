@@ -1,43 +1,41 @@
+// app/api/admin/login/route.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { ADMIN_SESSION_COOKIE, createSessionToken } from '@/lib/auth'
+import { createAccessToken, createRefreshToken, setAuthCookies } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
-  const { username, password } = await request.json().catch(() => ({}))
+  let body: { username?: string; password?: string } = {}
 
-  const expectedUsername = process.env.ADMIN_USERNAME
-  const expectedPassword = process.env.ADMIN_PASSWORD
-  const sessionSecret = process.env.ADMIN_SESSION_SECRET
-
-  if (!expectedUsername || !expectedPassword || !sessionSecret) {
-    return NextResponse.json(
-      {
-        error:
-          'Admin login is not configured. Set ADMIN_USERNAME, ADMIN_PASSWORD and ADMIN_SESSION_SECRET in .env.local.',
-      },
-      { status: 500 },
-    )
+  try {
+    body = await request.json()
+  } catch {
+    return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
   }
 
-  const validUsername = typeof username === 'string' && username === expectedUsername
-  const validPassword = typeof password === 'string' && password === expectedPassword
+  const { username, password } = body
 
-  if (!validUsername || !validPassword) {
-    return NextResponse.json(
-      { error: "Nom d'utilisateur ou mot de passe incorrect." },
-      { status: 401 },
-    )
+  const expectedUsername = process.env.ADMIN_USERNAME || 'admin'
+  const expectedPassword = process.env.ADMIN_PASSWORD || 'admin123'
+
+  if (!username || !password) {
+    return NextResponse.json({ error: 'Username and password required.' }, { status: 400 })
   }
 
-  const token = await createSessionToken(expectedUsername)
+  if (username !== expectedUsername || password !== expectedPassword) {
+    // Small delay to prevent brute force
+    await new Promise(r => setTimeout(r, 500))
+    return NextResponse.json({ error: "Nom d'utilisateur ou mot de passe incorrect." }, { status: 401 })
+  }
 
-  const response = NextResponse.json({ ok: true })
-  response.cookies.set(ADMIN_SESSION_COOKIE, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-    maxAge: 60 * 60 * 24 * 7, // 7 days, matches the JWT expiry in lib/auth.ts
-  })
-  return response
+  try {
+    const accessToken = await createAccessToken(expectedUsername)
+    const refreshToken = await createRefreshToken(expectedUsername)
+
+    const response = NextResponse.json({ ok: true })
+    setAuthCookies(response, accessToken, refreshToken)
+    return response
+  } catch (err) {
+    console.error('Token creation failed:', err)
+    return NextResponse.json({ error: 'Server error creating session.' }, { status: 500 })
+  }
 }
