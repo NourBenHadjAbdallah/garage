@@ -1,9 +1,10 @@
 // app/api/admin/upload/route.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
-import path from 'path'
 import { verifySessionToken, ADMIN_SESSION_COOKIE } from '@/lib/auth'
+import { supabaseAdmin } from '@/lib/supabase-admin'
+
+const BUCKET = 'posters'
 
 export async function POST(request: NextRequest) {
   // Auth check
@@ -39,12 +40,24 @@ export async function POST(request: NextRequest) {
     const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
 
-    // Save to public/posters
-    const uploadDir = path.join(process.cwd(), 'public', 'posters')
-    await mkdir(uploadDir, { recursive: true })
-    await writeFile(path.join(uploadDir, filename), buffer)
+    // Upload to Supabase Storage instead of local disk (works on serverless/Netlify)
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .upload(filename, buffer, {
+        contentType: file.type,
+        upsert: false,
+      })
 
-    return NextResponse.json({ url: `/posters/${filename}` })
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError)
+      return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
+    }
+
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from(BUCKET)
+      .getPublicUrl(filename)
+
+    return NextResponse.json({ url: publicUrlData.publicUrl })
   } catch (err) {
     console.error('Upload error:', err)
     return NextResponse.json({ error: 'Upload failed' }, { status: 500 })
